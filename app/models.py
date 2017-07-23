@@ -5,15 +5,15 @@ from app import db
 from sqlalchemy import Column, Integer, String
 
 
-class User(db.model):
+class User(db.Model):
     """
     Represents the class user table in the db
     """
     __tablename__ = 'users'    # Table name should always be plural
 
     user_id = Column(Integer, primary_key=True)
-    username = Column(String(50), index=True)
-    password_hash = Column(String(128))
+    username = Column(String(50), unique=True, index=True, nullable=False)
+    password_hash = Column(String(128), nullable=False)
 
 
     def hash_password(self, password):
@@ -27,3 +27,9 @@ class User(db.model):
         Checks if stored hashed password matches hash of the newly entered password
         """
         return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        """
+        Tells Python how to print objects of this class
+        """
+        return '<User {}>'.format(self.username)

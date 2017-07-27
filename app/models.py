@@ -1,8 +1,12 @@
-"""This file holds our models - a model is a representation of a table in a database
 """
+This file defines models for which we create a database and
+define r/ships between them
+"""
+import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from sqlalchemy import Column, Integer, String
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
 class User(db.Model):
@@ -27,6 +31,13 @@ class User(db.Model):
         Checks if stored hashed password matches hash of the newly entered password
         """
         return check_password_hash(self.password_hash, password)
+
+    def generate_auth_token(self, time_to_expire=3600):
+        """
+        Generates a token for authentication that expires after 1 hr
+        """
+        serializer = Serializer(os.environ.get('SECRET_KEY'), expires_in=time_to_expire)
+        return serializer.dumps({'id': self.id})    # Dumps serializes to a JSON-encoded string, eg {"name": "Monty", "email": "monty@python.org"}
 
     def __repr__(self):
         """

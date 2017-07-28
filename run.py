@@ -1,4 +1,5 @@
-"""This file define an entry point to start our app
+"""
+This file defines an entry point to start our app
 """
 import os
 from app import create_app

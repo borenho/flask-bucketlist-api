@@ -1,5 +1,6 @@
 """
-Blueprint organizes our app into components, eg auth compnent, bucketlist component"""
+Blueprint organizes our app into components, eg auth compnent, bucketlist component
+"""
 from flask import Blueprint
 
 # Create an insance of the auth blueprint

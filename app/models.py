@@ -5,7 +5,7 @@ define r/ships between them
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Datetime                                    
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
@@ -44,3 +44,41 @@ class User(db.Model):
         Tells Python how to print objects of this class
         """
         return '<User {}>'.format(self.username)
+
+
+class Bucketlist(db.model):
+    """ 
+    To create the table Bucketlists in the db
+    """
+    __tablename__ = 'bucketlists'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(255))
+    date_created = Column(Datetime, default = db.func.current_timetamp())
+    date_modified = Column(Datetime,
+        default = db.func.current_timetamp(),
+        onupdate = db.func.current_timetamp()
+    )
+
+    def __init__(self, title):
+        """Initialize the table with a title"""
+        self.title = title
+
+    def save(self):
+        """Method to save to the bucketlists table"""
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_table(self):
+        """Method to delete the bucketlists table"""
+        db.session.delete(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all():
+        """Method to get all bucketlists of this table"""
+        return Bucketlist.query.all()
+
+    def __repr__(self):
+        """Tells Python how to print objects of this class"""
+        return "<Bucketlist : {}>".format(self.title)

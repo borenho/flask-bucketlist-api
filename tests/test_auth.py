@@ -1,5 +1,5 @@
 import unittest, json
-from ..app import create_app, db
+from app import create_app, db
 
 class AuthTestCase(unittest.TestCase):
     """
@@ -22,7 +22,7 @@ class AuthTestCase(unittest.TestCase):
             db.create_all()
 
     def test_user_registration(self):
-        """Test user reg works"""
+        """Test user can create a new account"""
         response = self.client.post('auth/register', data=self.user_data)
         # Return the results in json format
         result = json.loads(response.data.decode)

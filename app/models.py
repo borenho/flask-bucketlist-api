@@ -5,7 +5,7 @@ define r/ships between them
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from sqlalchemy import Column, Integer, String, Datetime                                    
+from sqlalchemy import Column, Integer, String, DateTime                                    
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
@@ -46,7 +46,7 @@ class User(db.Model):
         return '<User {}>'.format(self.username)
 
 
-class Bucketlist(db.model):
+class Bucketlist(db.Model):
     """ 
     To create the table Bucketlists in the db
     """
@@ -54,8 +54,8 @@ class Bucketlist(db.model):
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255))
-    date_created = Column(Datetime, default = db.func.current_timetamp())
-    date_modified = Column(Datetime,
+    date_created = Column(DateTime, default = db.func.current_timetamp())
+    date_modified = Column(DateTime,
         default = db.func.current_timetamp(),
         onupdate = db.func.current_timetamp()
     )

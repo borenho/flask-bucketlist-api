@@ -101,4 +101,7 @@ ENV/
 .mypy_cache/
 
 # Mac stuff
-.DS_Store/
+*.DS_Store
+
+# virtualenv
+*buckei

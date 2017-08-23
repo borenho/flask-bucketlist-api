@@ -11,11 +11,13 @@ class BucketlistTestCase(unittest.TestCase):
         self.client = self.app.test_client
         self.bucketlist = {'title': 'Hiking'}
 
-        # Bind the app with th current context it is in
+        # Bind the app with the current context it is in
         with self.app.app_context():
             # create all tables
             db.create_all()
 
     def test_bucketlist_can_be_created(self):
-        """Test to see thata bucketlist can be successfully created"""
+        """Test to see that a bucketlist can be successfully created"""
         response = self.client().post('/bucketlists', data=self.bucketlist)
+        self.assertEqual(response.status_code, 201)    # 201 = created
+        self.assertIn('Hiking', str(response.data))

@@ -54,10 +54,10 @@ class Bucketlist(db.Model):
 
     id = Column(Integer, primary_key=True)
     title = Column(String(255))
-    date_created = Column(DateTime, default = db.func.current_timetamp())
+    date_created = Column(DateTime, default = db.func.current_timestamp())
     date_modified = Column(DateTime,
-        default = db.func.current_timetamp(),
-        onupdate = db.func.current_timetamp()
+        default = db.func.current_timestamp(),
+        onupdate = db.func.current_timestamp()
     )
 
     def __init__(self, title):
@@ -69,8 +69,8 @@ class Bucketlist(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def delete_table(self):
-        """Method to delete the bucketlists table"""
+    def delete(self):
+        """Method to delete a bucketlist"""
         db.session.delete(self)
         db.session.commit()
 

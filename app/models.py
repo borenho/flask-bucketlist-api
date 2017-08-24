@@ -5,7 +5,7 @@ define r/ships between them
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from sqlalchemy import Column, Integer, String, DateTime                                    
+from sqlalchemy import Column, Integer, String, DateTime                       
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
@@ -15,9 +15,10 @@ class User(db.Model):
     """
     __tablename__ = 'users'    # Table name should always be plural
 
-    user_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
     password_hash = Column(String(128), nullable=False)
+    bucketlists = db.relationship('Bucketlist', order_by='Bucketlist.id', cascade='all, delete-orphan')
 
 
     def hash_password(self, password):
@@ -37,7 +38,7 @@ class User(db.Model):
         Generates a token for authentication that expires after 1 hr
         """
         serializer = Serializer(os.environ.get('SECRET_KEY'), expires_in=time_to_expire)
-        return serializer.dumps({'id': self.user_id})    # Dumps serializes to a JSON-encoded string, eg {"name": "Monty", "email": "monty@python.org"}
+        return serializer.dumps({'id': self.id})    # Dumps serializes to a JSON-encoded string, eg {"name": "Monty", "email": "monty@python.org"}
 
     def __repr__(self):
         """
@@ -59,10 +60,12 @@ class Bucketlist(db.Model):
         default = db.func.current_timestamp(),
         onupdate = db.func.current_timestamp()
     )
+    created_by = Column(Integer, db.ForeignKey(User.id))
 
-    def __init__(self, title):
+    def __init__(self, title, created_by):
         """Initialize the table with a title"""
         self.title = title
+        self.created_by = created_by
 
     def save(self):
         """Method to save to the bucketlists table"""
@@ -75,9 +78,9 @@ class Bucketlist(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all():
+    def get_all(user_id):
         """Method to get all bucketlists of this table"""
-        return Bucketlist.query.all()
+        return Bucketlist.query.filter_by(created_by=user_id)
 
     def __repr__(self):
         """Tells Python how to print objects of this class"""

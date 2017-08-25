@@ -56,12 +56,12 @@ class LoginView(MethodView):
         if user:
             if user.verify_password(request.json.get('password')):
                 
-                access_token = user.generate_auth_token()
-
+                access_token = user.generate_auth_token(user.id)
+                
                 if access_token:
                     return jsonify({
                         "message": "You are successfully logged in",
-                        "access token": access_token
+                        "access token": access_token.decode()
                     }), 200
 
             return jsonify({

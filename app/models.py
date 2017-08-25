@@ -3,10 +3,12 @@ This file defines models for which we create a database and
 define r/ships between them
 """
 import os
+from flask import jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from sqlalchemy import Column, Integer, String, DateTime                       
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime, timedelta                     
+import jwt
 
 
 class User(db.Model):
@@ -32,13 +34,36 @@ class User(db.Model):
         """
         return check_password_hash(self.password_hash, password)
 
-    def generate_auth_token(self, time_to_expire=3600):
+    def generate_auth_token(self, id):
         """
-        Generates a token for authentication that expires after 1 hr
+        Generates a token for authentication
         """
-        serializer = Serializer(os.environ.get('SECRET'), expires_in=time_to_expire)
-        return serializer.dumps(dict(id=self.id))    # Dumps serializes to a JSON-encoded string, eg {"name": "Monty", "email": "monty@python.org"}
+        # Create a payload/claim
+        payload = {
+            "iss": id,    # iss = issuer of token
+            "exp": datetime.utcnow() + timedelta(minutes=60)    # iat = issued at time
+        }
+        jwt_string = jwt.encode(payload, os.getenv('SECRET'), algorithm='HS256')
+        
+        return jwt_string
 
+    @staticmethod
+    def decode_token(token):
+        """Decode the auth token from the authorization header"""
+        if jwt.ExpiredSignatureError:
+            return jsonify({
+            "message": "Expired token, please login to get a new token"
+        })
+
+        if jwt.InvalidTokenError:
+            return jsonify({
+            "message": "Invalid token, please register or login to get a new token"
+        })
+
+        decoded_token = jwt.decode(token, os.getenv('SECRET'), algorithm='HS256')
+        
+        return decoded_token
+        
     def save(self):
         """Method to save user"""
         db.session.add(self)

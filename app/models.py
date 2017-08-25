@@ -20,7 +20,6 @@ class User(db.Model):
     password_hash = Column(String(128), nullable=False)
     bucketlists = db.relationship('Bucketlist', order_by='Bucketlist.id', cascade='all, delete-orphan')
 
-
     def hash_password(self, password):
         """
         Hashes the password and stores it
@@ -39,6 +38,11 @@ class User(db.Model):
         """
         serializer = Serializer(os.environ.get('SECRET_KEY'), expires_in=time_to_expire)
         return serializer.dumps({'id': self.id})    # Dumps serializes to a JSON-encoded string, eg {"name": "Monty", "email": "monty@python.org"}
+
+    def save(self):
+        """Method to save user"""
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         """

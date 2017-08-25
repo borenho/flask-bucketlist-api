@@ -21,4 +21,4 @@ class BucketlistTestCase(unittest.TestCase):
         """Test to see that a bucketlist can be successfully created"""
         response = self.client.post('/bucketlists/', data=json.dumps(self.bucketlist), content_type='application/json')
         self.assertEqual(response.status_code, 201)    # 201 = created
-        self.assertIn('Hiking', str(response.data))
+        self.assertIn('Hiking', response.json.get)

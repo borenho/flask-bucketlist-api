@@ -18,10 +18,6 @@ def create_app(configuration):
 
     db.init_app(app)
 
-    # Import the auth blueprint and register it
-    # from .auth import auth_blueprint
-    # app.register_blueprint(auth_blueprint)
-
     @app.route('/bucketlists/', methods=['GET', 'POST'])
     def bucketlists():
         if request.method == 'POST':
@@ -98,5 +94,9 @@ def create_app(configuration):
                 response.status_code = 200
 
                 return response
+
+    # Import the auth blueprint and register it
+    from .auth import auth_blueprint
+    app.register_blueprint(auth_blueprint)
 
     return app

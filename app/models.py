@@ -36,8 +36,8 @@ class User(db.Model):
         """
         Generates a token for authentication that expires after 1 hr
         """
-        serializer = Serializer(os.environ.get('SECRET_KEY'), expires_in=time_to_expire)
-        return serializer.dumps({'id': self.id})    # Dumps serializes to a JSON-encoded string, eg {"name": "Monty", "email": "monty@python.org"}
+        serializer = Serializer(os.environ.get('SECRET'), expires_in=time_to_expire)
+        return serializer.dumps(dict(id=self.id))    # Dumps serializes to a JSON-encoded string, eg {"name": "Monty", "email": "monty@python.org"}
 
     def save(self):
         """Method to save user"""

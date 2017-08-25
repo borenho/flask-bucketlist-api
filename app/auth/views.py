@@ -45,11 +45,44 @@ class RegistrationView(MethodView):
                 return jsonify({
             "message": "Hey {}, you have been successfully registered".format(username)
             }), 201
+
+class LoginView(MethodView):
+    """
+    A class based view to handle login and access to auth tokens
+    """
+    def post(self):
+        user = User.query.filter_by(username=request.json.get('username')).first()
+
+        if user:
+            if user.verify_password(request.json.get('password')):
                 
+                access_token = user.generate_auth_token()
+
+                if access_token:
+                    return jsonify({
+                        "message": "You are successfully logged in",
+                        "access token": access_token
+                    }), 200
+
+            return jsonify({
+                "message": "You entered the wrong password"
+            }), 401
+
+        return jsonify({
+            "message": "You are not yet registered. Please sign up for an account first"
+        }), 401
+
 registration_view = RegistrationView.as_view('register_view')
+login_view = LoginView.as_view('login_view')
 
 auth_blueprint.add_url_rule(
     '/auth/register',
     view_func = registration_view,
+    methods = ['POST']
+)
+
+auth_blueprint.add_url_rule(
+    '/auth/login',
+    view_func = login_view,
     methods = ['POST']
 )

@@ -71,5 +71,83 @@ class BucketlistTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('Hiking', response.data.decode())
 
-    # def test_api_can_get_bucketlist_by_id(self):
-    #     pass
+    def test_api_can_get_bucketlist_by_id(self):
+        """Test api can get a single bucketlist, belonging to a single user"""
+        self.register_sample_user()
+        registered_user = self.login_sample_user()
+        access_token = json.loads(registered_user.data.decode())['access_token']
+
+        response = self.client.post(
+            '/bucketlists/',
+            headers = dict(Authorization="Bearer " + access_token),
+            data = json.dumps(self.bucketlist), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+
+        results = json.loads(response.data.decode())
+        bucketlist = self.client.get(
+            '/bucketlists/{}'.format(results['id']),
+            headers = dict(Authorization="Bearer {}".format(access_token))
+        )
+        # Assert that the bucketlist is returned, given its id
+        self.assertEqual(bucketlist.status_code, 200)
+        self.assertIn('Hiking', str(bucketlist.data))
+
+    def test_bucketlist_can_be_edited(self):
+        """Test api can edit a bucketlist, PUT request"""
+        self.register_sample_user()
+        login = self.login_sample_user()
+        access_token = json.loads(login.data.decode())['access_token']
+
+        response = self.client.post(
+            '/bucketlists/',
+            headers = dict(Authorization="Bearer " + access_token),
+            data = json.dumps({"title": "All work and no play makes Jack a dull boy."}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        results = json.loads(response.data.decode())
+
+        # Make a put request to edit the bucketlist
+        response = self.client.put(
+            '/bucketlists/{}'.format(results['id']),
+            headers = dict(Authorization="Bearer " + access_token),
+            data = json.dumps({"title": "Work and play makes Jack a smart boy."}),
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Pick the edited bucketlist to see if it's actually edited
+        results = self.client.get(
+            '/bucketlists/{}'.format(results['id']),
+            headers = dict(Authorization="Bearer {}".format(access_token)))
+
+        self.assertIn('smart boy', str(results.data))
+
+    def test_bucketlist_can_be_deleted(self):
+        """Test bucketlist can be deleted, by DELETE request"""
+        self.register_sample_user()
+        login = self.login_sample_user()
+        access_token = json.loads(login.data.decode())['access_token']
+
+        response = self.client.post(
+            '/bucketlists/',
+            headers = dict(Authorization="Bearer " + access_token),
+            data = json.dumps({"title": "Pete is cooling hot maandazi. Sorry, I meant burgers"}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 201)
+        results = json.loads(response.data.decode())
+
+        # Delete the bucketlist we just created
+        response = self.client.delete(
+            '/bucketlists/{}'.format(results['id']),
+            headers = dict(Authorization="Bearer {}".format(access_token)))
+        
+        self.assertEqual(response.status_code, 200)
+
+        # Test to see if it can find the deleted buck, it should return a 404
+        results = self.client.get(
+            '/bucketlists/{}'.format(results['id']),
+            headers = dict(Authorization="Bearer {}".format(access_token)))
+        self.assertEqual(results.status_code, 404)

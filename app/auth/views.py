@@ -11,7 +11,7 @@ class RegistrationView(MethodView):
         if user:
             return jsonify({
         "message": "That username already exists, please use a different one"
-        }), 400
+        }), 202
 
         else:
             username = request.json.get('username')
@@ -61,7 +61,7 @@ class LoginView(MethodView):
                 if access_token:
                     return jsonify({
                         "message": "You are successfully logged in",
-                        "access token": access_token.decode()
+                        "access_token": access_token.decode()
                     }), 200
 
             return jsonify({

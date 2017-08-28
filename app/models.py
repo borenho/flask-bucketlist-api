@@ -49,20 +49,17 @@ class User(db.Model):
 
     @staticmethod
     def decode_token(token):
-        """Decode the auth token from the authorization header"""
-        if jwt.ExpiredSignatureError:
-            return jsonify({
-            "message": "Expired token, please login to get a new token"
-        })
-
-        if jwt.InvalidTokenError:
-            return jsonify({
-            "message": "Invalid token, please register or login to get a new token"
-        })
-
-        decoded_token = jwt.decode(token, os.getenv('SECRET'), algorithm='HS256')
-        
-        return decoded_token
+        """Decodes the access token from the Authorization header."""
+        try:
+            # try to decode the token using our SECRET variable
+            payload = jwt.decode(token, os.getenv('SECRET'))
+            return payload['iss']
+        except jwt.ExpiredSignatureError:
+            # the token is expired, return an error string
+            return "Expired token. Please login to get a new token"
+        except jwt.InvalidTokenError:
+            # the token is invalid, return an error string
+            return "Invalid token. Please register or login"
         
     def save(self):
         """Method to save user"""

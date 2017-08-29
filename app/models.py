@@ -80,13 +80,14 @@ class Bucketlist(db.Model):
     __tablename__ = 'bucketlists'
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(255))
+    title = Column(String(255), unique=True, index=True, nullable=False)
     date_created = Column(DateTime, default = db.func.current_timestamp())
     date_modified = Column(DateTime,
         default = db.func.current_timestamp(),
         onupdate = db.func.current_timestamp()
     )
     created_by = Column(Integer, db.ForeignKey(User.id))
+    bucketlist_items = db.relationship('BucketlistItem', order_by='BucketlistItem.id', cascade='all, delete-orphan')
 
     def __init__(self, title, created_by):
         """Initialize the table with a title"""
@@ -111,3 +112,43 @@ class Bucketlist(db.Model):
     def __repr__(self):
         """Tells Python how to print objects of this class"""
         return "<Bucketlist : {}>".format(self.title)
+
+
+class BucketlistItem(db.Model):
+    """ 
+    To create the table BucketlistItems in the db
+    """
+    __tablename__ = 'bucketlist_items'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String(255), unique=True, index=True, nullable=False)
+    date_created = Column(DateTime, default = db.func.current_timestamp())
+    date_modified = Column(DateTime,
+        default = db.func.current_timestamp(),
+        onupdate = db.func.current_timestamp()
+    )
+    bucketlist_id = Column(Integer, db.ForeignKey(Bucketlist.id))
+
+    def __init__(self, title, bucketlist_id):
+        """Initialize the table with a title and its parent's id"""
+        self.title = title
+        self.bucketlist_id = bucketlist_id
+
+    def save(self):
+        """Method to save to the bucketlists table"""
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        """Method to delete a bucketlist"""
+        db.session.delete(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all(bucketlist_id):
+        """Method to get all bucketlists of this table"""
+        return BucketlistItem.query.filter_by(bucketlist_id=bucketlist_id)
+
+    def __repr__(self):
+        """Tells Python how to print objects of this class"""
+        return "<Bucketlist Item : {}>".format(self.title)

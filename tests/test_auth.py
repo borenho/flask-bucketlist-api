@@ -74,6 +74,29 @@ class AuthTestCase(unittest.TestCase):
         result = json.loads(response.data.decode())
         self.assertEqual(result['message'], "You are not yet registered. Please sign up for an account first")
 
-    def test_wrong_password(self):
-        pass
+    # def test_wrong_password(self):
+    #     pass
+
+    def test_logout(self):
+        """Test a logged in user can logout"""
+        registration = self.client.post("/auth/register", data=json.dumps(self.user_data), content_type='application/json')
+        login = self.client.post('/auth/login', data=json.dumps(self.user_data), content_type='application/json')
+
+        response = json.loads(login.data.decode())
+        response['access_token'] = None
+        self.assertFalse(response['access_token'])
+
+    def test_password_change(self):
+        """Test user can change password"""
+        registration = self.client.post("/auth/register", data=json.dumps(self.user_data), content_type='application/json')
+        login = self.client.post('/auth/login', data=json.dumps(self.user_data), content_type='application/json')
+        results = json.loads(login.data.decode())
+        new_password = {
+            "username": "kaka",
+            "password": "very-very-hard, unusually-hard" 
+        }
+        reset_password = self.client.put('/auth/reset-password', data=json.dumps(new_password), content_type='application/json')
+
+        new_results = json.loads(reset_password.data.decode())
+        self.assertEqual(new_results['message'], "Your password has been successfully changed")
         

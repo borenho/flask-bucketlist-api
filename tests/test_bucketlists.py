@@ -114,15 +114,16 @@ class BucketlistTestCase(unittest.TestCase):
             data = json.dumps({"title": "Work and play makes Jack a smart boy."}),
             content_type='application/json'
         )
-
         self.assertEqual(response.status_code, 200)
+        new_results = json.loads(response.data.decode())
+        print(new_results)
 
         # Pick the edited bucketlist to see if it's actually edited
-        results = self.client.get(
-            '/bucketlists/{}'.format(results['id']),
+        final_response = self.client.get(
+            '/bucketlists/{}'.format(new_results['id']),
             headers = dict(Authorization="Bearer {}".format(access_token)))
 
-        self.assertIn('smart boy', str(results.data))
+        self.assertIn('smart boy', str(final_response.data))
 
     def test_bucketlist_can_be_deleted(self):
         """Test bucketlist can be deleted, by DELETE request"""

@@ -22,60 +22,73 @@ def create_app(configuration):
     def bucketlists():
         # Get the access token from the passed header
         auth_header = request.headers.get('Authorization')
-        access_token = auth_header.split("Bearer ")[1]
-        if access_token:
-            # Decode the token to get the user id
-            user_id = User.decode_token(access_token)
-            if not isinstance(user_id, str):
-                if request.method == 'POST':
-                    title = request.json.get('title')
-                    if title:
-                        bucketlist = Bucketlist(title=title, created_by=user_id)
-                        bucketlist.save()
+        if auth_header:
+            access_token = auth_header.split("Bearer ")[1]
+            if access_token:
+                # Decode the token to get the user id
+                user_id = User.decode_token(access_token)
+                if not isinstance(user_id, str):
+                    if request.method == 'POST':
+                        title = request.json.get('title')
+                        if title:
+                            bucketlists = Bucketlist.get_all(user_id)
+                            if bucketlists:
+                                for bucketlist in bucketlists:
+                                    if title == bucketlist.title:
+                                        return jsonify({
+                                        "message": "The title should be unique, use a different name"
+                                    })
 
-                        response = jsonify({
-                            'id': bucketlist.id,
-                            'title': bucketlist.title,
-                            'date_created': bucketlist.date_created,
-                            'date_modified': bucketlist.date_modified,
-                            'created_by': user_id
-                        })
-                        response.status_code = 201
+                            bucketlist = Bucketlist(title=title, created_by=user_id)
+                            bucketlist.save()
+
+                            response = jsonify({
+                                'id': bucketlist.id,
+                                'title': bucketlist.title,
+                                'date_created': bucketlist.date_created,
+                                'date_modified': bucketlist.date_modified,
+                                'created_by': user_id
+                            })
+                            response.status_code = 201
+
+                            return response
+                    else:    # If GET
+                        bucketlists = Bucketlist.get_all(user_id)
+                        results = []
+
+                        for bucketlist in bucketlists:
+                            item = {
+                                'id': bucketlist.id,
+                                'title': bucketlist.title,
+                                'date_created': bucketlist.date_created,
+                                'date_modified': bucketlist.date_modified,
+                                'created_by': user_id
+                            }
+                            results.append(item)
+
+                        response = jsonify(results)
+                        response.status_code = 200
+
+                        if not results:
+                            return jsonify({
+                            "message": "Hey, you don't have bucketlist yet, please create one"
+                        }), 404
 
                         return response
-                else:    # If GET
-                    bucketlists = Bucketlist.get_all(user_id)
-                    results = []
-
-                    for bucketlist in bucketlists:
-                        item = {
-                            'id': bucketlist.id,
-                            'title': bucketlist.title,
-                            'date_created': bucketlist.date_created,
-                            'date_modified': bucketlist.date_modified,
-                            'created_by': user_id
-                        }
-                        results.append(item)
-
-                    response = jsonify(results)
-                    response.status_code = 200
-
-                    if not results:
-                        return jsonify({
-                        "message": "Hey, you don't have bucketlist yet, please create one"
-                    }), 404
-
-                    return response
+                else:
+                    # User_id not found, payload is an error msg
+                    return jsonify({
+                    "message": "Error, could not authenticate. Please login first"
+                }), 401
             else:
-                # User_id not found, payload is an error msg
-                return jsonify({
-                "message": "Error, could not authenticate. Please login first"
-            }), 401
-        else:
-                # No access token
-                return jsonify({
-                "message": "Error, access token not found, you need to login first"
-            }), 401
+                    # No access token
+                    return jsonify({
+                    "message": "Error, access token not found, you need to login first"
+                }), 401
+        else:   # No auth_header
+            return jsonify({
+                    "message": "Error, access token not found, you need to login first"
+                }), 401
 
     @app.route('/bucketlists/<int:id>', methods=['GET', 'PUT', 'DELETE'])
     def modify_bucketlist(id, **kwargs):
@@ -93,23 +106,30 @@ def create_app(configuration):
                     }), 404
 
                 if request.method == 'PUT':
-                    bucketlist.title = request.json.get('title', '')
-                    bucketlist.save()
+                    title = request.json.get('title')
+                    bucketlists = Bucketlist.get_all(user_id)
+                    if bucketlists:
+                        for bucket in bucketlists:
+                            if title == bucket.title:
+                                return jsonify({
+                                "message": "The title should be unique, use a different name"
+                            })
+                            else:
+                                bucketlist.title = title
+                                bucketlist.save()
 
-                    response = jsonify({
-                        'id': bucketlist.id,
-                        'title': bucketlist.title,
-                        'date_created': bucketlist.date_created,
-                        'date_modified': bucketlist.date_modified,
-                        'created_by': user_id
-                    }), 200
+                                response = jsonify({
+                                    'id': bucketlist.id,
+                                    'title': bucketlist.title,
+                                    'date_created': bucketlist.date_created,
+                                    'date_modified': bucketlist.date_modified,
+                                    'created_by': user_id
+                                }), 200
 
-                    return response
+                                return response
 
                 elif request.method == 'DELETE':
                     bucketlist.delete()
-
-                    # return make_response('Buck deleted', 200)
 
                     return jsonify({
                         "message": "Bucketlist # {} deleted successfully".format(bucketlist.id)

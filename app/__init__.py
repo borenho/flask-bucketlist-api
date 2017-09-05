@@ -53,6 +53,35 @@ def create_app(configuration):
 
                             return response
                     else:    # If GET
+                        q = request.args.get('q', '').strip()
+                        if q:
+                            items = Bucketlist.query.filter(Bucketlist.title.like("%"+q+"%"))\
+                            .filter(Bucketlist.created_by==user_id).all()
+                            if items:
+                                results = []
+
+                                for item in items:
+                                    single = {
+                                        'id': item.id,
+                                        'title': item.title,
+                                        'date_created': item.date_created,
+                                        'date_modified': item.date_modified,
+                                        'created_by': user_id
+                                    }
+                                    results.append(single)
+
+                                response = jsonify(results), 200
+
+                                if not results:
+                                    return jsonify({
+                                    "message": "Hey, you don't have bucketlist yet, please create one"
+                                }), 404
+
+                                return response
+
+                            if not items:
+                                return jsonify({"message": "Bucketlist not found"})
+                        # If q not passed
                         bucketlists = Bucketlist.get_all(user_id)
                         results = []
 
@@ -66,8 +95,7 @@ def create_app(configuration):
                             }
                             results.append(item)
 
-                        response = jsonify(results)
-                        response.status_code = 200
+                        response = jsonify(results), 200
 
                         if not results:
                             return jsonify({
@@ -75,6 +103,7 @@ def create_app(configuration):
                         }), 404
 
                         return response
+
                 else:
                     # User_id not found, payload is an error msg
                     return jsonify({

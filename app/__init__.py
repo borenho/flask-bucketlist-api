@@ -53,7 +53,8 @@ def create_app(configuration):
 
                             return response
                     else:    # If GET
-                        q = request.args.get('q', '').strip()
+                        # Search bucketlists usinh the search parameter "q"
+                        q = request.args.get('q', ' ').strip()
                         if q:
                             items = Bucketlist.query.filter(Bucketlist.title.like("%"+q+"%"))\
                             .filter(Bucketlist.created_by==user_id).all()
@@ -81,11 +82,38 @@ def create_app(configuration):
 
                             if not items:
                                 return jsonify({"message": "Bucketlist not found"})
-                        # If q not passed
-                        bucketlists = Bucketlist.get_all(user_id)
+
+                        # Implement pagination
+                        # Get the pages parameter or set it to 1
+                        if request.args.get('page'):
+                            page = int(request.args.get('page'))
+                        else:
+                            page = 1    # default page
+
+                        # Set the limit of the no of bucketlists to be viewed
+                        if request.args.get('limit'):
+                            limit = int(request.args.get('limit'))
+                        else:
+                            limit = 3    # default limit
+
+                        # If q has not been passed / no search query made
+                        bucketlists = Bucketlist.get_all(user_id).paginate(page, limit, False)
                         results = []
 
-                        for bucketlist in bucketlists:
+                        if results:
+                            return jsonify({
+                            "message": "Hey, you don't have bucketlist yet, please create one"
+                        }), 404
+
+                        if bucketlists.has_next:
+                            next_page_url = "?page=" + str(page + 1) + "&limit=" + str(limit)
+                        else: next_page_url = ""
+
+                        if bucketlists.has_prev:
+                            prev_page_url = "?page=" + str(page - 1) + "&limit=" + str(limit)
+                        else: prev_page_url = ""
+
+                        for bucketlist in bucketlists.items:
                             item = {
                                 'id': bucketlist.id,
                                 'title': bucketlist.title,
@@ -95,12 +123,10 @@ def create_app(configuration):
                             }
                             results.append(item)
 
-                        response = jsonify(results), 200
-
-                        if not results:
-                            return jsonify({
-                            "message": "Hey, you don't have bucketlist yet, please create one"
-                        }), 404
+                        response = jsonify({
+                            'next_url': next_page_url, 
+                            'prev_url': prev_page_url,
+                            'results': results}), 200
 
                         return response
 

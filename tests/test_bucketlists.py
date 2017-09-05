@@ -152,3 +152,22 @@ class BucketlistTestCase(unittest.TestCase):
             '/bucketlists/{}'.format(results['id']),
             headers = dict(Authorization="Bearer {}".format(access_token)))
         self.assertEqual(results.status_code, 404)
+
+    def test_api_can_search_bucketlists(self):
+        """Test api can search for a bucketlist and return the searched result"""
+        self.register_sample_user()
+        result = self.login_sample_user()
+        # Get the auth token and add it to the authorization header
+        access_token = json.loads(result.data.decode())['access_token']
+
+        response = self.client.post(
+            '/bucketlists/',
+            headers = dict(Authorization="Bearer {}".format(access_token)),
+            data=json.dumps(self.bucketlist), content_type='application/json')
+
+        response = self.client.get(
+            '/bucketlists/?q=Hiking',
+            headers = dict(Authorization="Bearer {}".format(access_token))
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Hiking', response.data.decode())

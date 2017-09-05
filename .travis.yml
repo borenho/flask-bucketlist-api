@@ -1,0 +1,16 @@
+language: python
+
+
+python: '3.5'
+
+
+# Install dependencies
+install: 
+    - pip install -r requirements.txt
+    - pip install coveralls
+
+
+# Run tests
+script: nosetests --with-coverage
+
+after_success: coveralls

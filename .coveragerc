@@ -2,7 +2,7 @@
 omit=
     */python?.?/*
     */site-packages/nose/*
-    *__init__*
+    
     */lib/python/*
     *__repr__*
     *__eq__*

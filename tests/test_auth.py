@@ -37,18 +37,6 @@ class AuthTestCase(unittest.TestCase):
         result = json.loads(second_registration.data.decode())
         self.assertEqual(result['message'], "That username already exists, please use a different one")
 
-    # def test_null_username(self):
-    #     pass
-
-    # def test_null_password(self):
-    #     pass
-
-    # def test_short_username(self):
-    #     pass
-
-    # def test_short_password(self):
-    #     pass
-
     def test_login(self):
         """Test registered user can login"""
         registration = self.client.post("/auth/register", data=json.dumps(self.user_data), content_type='application/json')

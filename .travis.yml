@@ -13,13 +13,6 @@ install:
     - pip install -r requirements.txt
     - pip install coveralls
 
-# Add environment variables
-env:
-  global:
-    - SECRET = a-very-random-string-that-should-not-be-human-readable,-just-kidding-
-    - APP_SETTINGS = testing
-    - DATABASE_URL = postgresql://localhost/test_db
-
 # Run tests
 script: nosetests --with-coverage
 

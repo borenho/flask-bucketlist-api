@@ -1,0 +1,11 @@
+[report]
+omit=
+    */python?.?/*
+    */site-packages/nose/*
+    
+    */lib/python/*
+    *__repr__*
+    *__eq__*
+    */blinker/*
+    [html]
+    directory = coverage_html

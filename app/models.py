@@ -109,6 +109,11 @@ class Bucketlist(db.Model):
         """Method to get all bucketlists of this table"""
         return Bucketlist.query.filter_by(created_by=user_id)
 
+    @staticmethod
+    def title_exists(title):
+        """Checks if a bucketlist with the passed name already exists in the db"""
+        return Bucketlist.query.filter_by(title=title).first()
+
     def __repr__(self):
         """Tells Python how to print objects of this class"""
         return "<Bucketlist : {}>".format(self.title)
@@ -148,6 +153,11 @@ class BucketlistItem(db.Model):
     def get_all(bucketlist_id):
         """Method to get all bucketlists of this table"""
         return BucketlistItem.query.filter_by(bucketlist_id=bucketlist_id)
+
+    @staticmethod
+    def title_exists(title):
+        """Checks if an item with the passed name already exists in the db"""
+        return BucketlistItem.query.filter_by(title=title).first()
 
     def __repr__(self):
         """Tells Python how to print objects of this class"""

@@ -33,7 +33,7 @@ class AuthTestCase(unittest.TestCase):
         first_registration = self.client.post('/auth/register', data=json.dumps(self.user_data), content_type='application/json')
         self.assertEqual(first_registration.status_code, 201)
         second_registration = self.client.post('/auth/register', data=json.dumps(self.user_data), content_type='application/json')
-        self.assertEqual(second_registration.status_code, 202)
+        self.assertEqual(second_registration.status_code, 202)   # Data conflict
         result = json.loads(second_registration.data.decode())
         self.assertEqual(result['message'], "That username already exists, please use a different one")
 
@@ -61,9 +61,6 @@ class AuthTestCase(unittest.TestCase):
 
         result = json.loads(response.data.decode())
         self.assertEqual(result['message'], "You are not yet registered. Please sign up for an account first")
-
-    # def test_wrong_password(self):
-    #     pass
 
     def test_logout(self):
         """Test a logged in user can logout"""

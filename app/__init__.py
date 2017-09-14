@@ -298,14 +298,22 @@ def create_app(configuration):
                     else:
                         # Implement pagination
                         # Get the pages parameter or set it to 1
-                        if request.args.get('page'):
-                            page = int(request.args.get('page'))
+                        raw_page = request.args.get('page')
+                        if raw_page:
+                            try:
+                                page = int(raw_page)
+                            except ValueError:
+                                return jsonify({"message": "The page must be an integer"})
                         else:
                             page = 1    # default page
 
                         # Set the limit of the no of bucketlists to be viewed
-                        if request.args.get('limit'):
-                            limit = int(request.args.get('limit'))
+                        raw_limit = request.args.get('limit')
+                        if raw_limit:
+                            try:
+                                limit = int(raw_limit)
+                            except ValueError:
+                                return jsonify({"message": "The limit must be an integer"})
                         else:
                             limit = 3    # default limit
 

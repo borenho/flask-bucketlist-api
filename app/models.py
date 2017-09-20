@@ -18,7 +18,8 @@ class User(db.Model):
     __tablename__ = 'users'    # Table name should always be plural
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(50), unique=True, index=True, nullable=False)
+    username = Column(String(50))
+    email = Column(String(50), unique=True, index=True)
     password_hash = Column(String(128), nullable=False)
     bucketlists = db.relationship('Bucketlist', order_by='Bucketlist.id', cascade='all, delete-orphan')
 
@@ -70,7 +71,7 @@ class User(db.Model):
         """
         Tells Python how to print objects of this class
         """
-        return '<User {}>'.format(self.username)
+        return '<User {}>'.format(self.email)
 
 
 class Bucketlist(db.Model):

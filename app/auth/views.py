@@ -7,44 +7,50 @@ class RegistrationView(MethodView):
     """A class to register a new user"""
     def post(self):
         if request.get_json():
-            user = User.query.filter_by(username=request.json.get('username')).first()
+            user = User.query.filter_by(email=request.json.get('email')).first()
 
             if user:
                 return jsonify({
-            "message": "That username already exists, please use a different one"
+            "message": "That email already exists, please use a different one"
             }), 202
 
             else:
                 username = request.json.get('username')
+                email = request.json.get('email')
                 password = request.json.get('password')
 
-                if not username and password:
+                if not username and password and email:
                     return jsonify({
-                    "message": "You need to pass in the username and password"
-                })
+                    "message": "You need to pass in the username, email and password"
+                }), 401
 
                 if not username:
                     return jsonify({
                 "message": "The username cannot be blank, please enter a username"
-                }), 400
+                }), 401
+
+                if not email:
+                    return jsonify({
+                "message": "The email cannot be blank, please enter a username"
+                }), 401
 
                 elif not password:
                     return jsonify({
                 "message": "The password cannot be blank, please enter a password"
-                }), 400
+                }), 401
 
                 elif len(username) < 4:
                     return jsonify({
                 "message": "The username should have more than 4 characters"
-                }), 400
+                }), 401
 
                 elif len(password) < 4:
                     return jsonify({
                 "message": "The password should have more than 4 characters"
-                }), 400
+                }), 401
 
                 else:
-                    user = User(username=username)
+                    user = User(username=username, email=email)
                     user.hash_password(password)
                     user.save()
 
@@ -53,7 +59,7 @@ class RegistrationView(MethodView):
                 }), 201
         else:
             return jsonify({
-                "message": "You need to pass in the username and password"
+                "message": "You need to pass in some data"
             }), 401
 
 class LoginView(MethodView):
@@ -62,7 +68,7 @@ class LoginView(MethodView):
     """
     def post(self):
         if request.get_json():    # If something has been passed through the request
-            user = User.query.filter_by(username=request.json.get('username')).first()
+            user = User.query.filter_by(email=request.json.get('email')).first()
 
             if user:
                 if user.verify_password(request.json.get('password')):
@@ -80,32 +86,38 @@ class LoginView(MethodView):
                 }), 401
 
             username = request.json.get('username')
+            email = request.json.get('email')
             password = request.json.get('password')
 
-            if not username and password:
+            if not username and password and email:
                 return jsonify({
-                "message": "You need to pass in the username and password"
+                "message": "You need to pass in the username, email and password"
             })
 
             if not username:
                 return jsonify({
             "message": "The username cannot be blank, please enter a username"
-            }), 400
+            }), 401
+
+            if not email:
+                return jsonify({
+            "message": "The email cannot be blank, please enter a username"
+            }), 401
 
             elif not password:
                 return jsonify({
             "message": "The password cannot be blank, please enter a password"
-            }), 400
+            }), 401
 
             elif len(username) < 4:
                 return jsonify({
             "message": "The username should have more than 4 characters"
-            }), 400
+            }), 401
 
             elif len(password) < 4:
                 return jsonify({
             "message": "The password should have more than 4 characters"
-            }), 400
+            }), 401
 
             else:
                 return jsonify({
@@ -113,8 +125,8 @@ class LoginView(MethodView):
                 }), 401
         else:
             return jsonify({
-                "message": "You need to pass in the username and password"
-            })
+                "message": "You need to pass in some data"
+            }), 401
 
     
 class LogoutView(MethodView):
@@ -129,7 +141,7 @@ class LogoutView(MethodView):
         else:
             return jsonify({
                 "message": "You are not logged in"
-            }), 200
+            }), 403
 
 class ResetPasswordView(MethodView):
     """A class to allow a user to change their password"""
@@ -137,32 +149,32 @@ class ResetPasswordView(MethodView):
         if not request.get_json():
             return jsonify({
             "message": "Please enter some data to proceed"
-        }), 400
+        }), 403
 
         data = request.get_json()
-        username = data.get('username')
+        email = data.get('email')
         new_password = data.get('password')
 
-        if not username:
+        if not email:
             return jsonify({
-                "message": "Please enter your username"
-            }), 400
+                "message": "Please enter your email"
+            }), 401
 
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=email).first()
         if not user:
             return jsonify({
-                "message": "Username not found."
-            }), 400
+                "message": "Email not found."
+            }), 403
 
         if not new_password or new_password == "" or new_password == " ":
             return jsonify({
                 "message": "The password cannot be blank, please enter a password"
-                }), 400
+                }), 401
         
         if len(new_password) < 4:
                     return jsonify({
                 "message": "The password should have more than 4 characters"
-                }), 400
+                }), 401
 
         user.hash_password(new_password)
         user.save()

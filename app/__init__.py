@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, abort, make_response, session
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from config.config import app_config
+from flask_cors import CORS
 
 db = SQLAlchemy()
 
@@ -15,7 +16,7 @@ def create_app(configuration):
     app = Flask(__name__)
     app.config.from_object(app_config[configuration])
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    # This sets performance overhead, set to True for debugging
-
+    CORS(app)
     db.init_app(app)
 
 

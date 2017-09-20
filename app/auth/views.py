@@ -18,12 +18,17 @@ class RegistrationView(MethodView):
                 username = request.json.get('username')
                 password = request.json.get('password')
 
-                if not username or username == "" or username == " ":
+                if not username and password:
+                    return jsonify({
+                    "message": "You need to pass in the username and password"
+                })
+
+                if not username:
                     return jsonify({
                 "message": "The username cannot be blank, please enter a username"
                 }), 400
 
-                elif not password or password == "" or password == " ":
+                elif not password:
                     return jsonify({
                 "message": "The password cannot be blank, please enter a password"
                 }), 400
@@ -74,9 +79,38 @@ class LoginView(MethodView):
                     "message": "You entered the wrong password"
                 }), 401
 
-            return jsonify({
-                "message": "You are not yet registered. Please sign up for an account first"
-            }), 401
+            username = request.json.get('username')
+            password = request.json.get('password')
+
+            if not username and password:
+                return jsonify({
+                "message": "You need to pass in the username and password"
+            })
+
+            if not username:
+                return jsonify({
+            "message": "The username cannot be blank, please enter a username"
+            }), 400
+
+            elif not password:
+                return jsonify({
+            "message": "The password cannot be blank, please enter a password"
+            }), 400
+
+            elif len(username) < 4:
+                return jsonify({
+            "message": "The username should have more than 4 characters"
+            }), 400
+
+            elif len(password) < 4:
+                return jsonify({
+            "message": "The password should have more than 4 characters"
+            }), 400
+
+            else:
+                return jsonify({
+                    "message": "You are not yet registered. Please sign up for an account first"
+                }), 401
         else:
             return jsonify({
                 "message": "You need to pass in the username and password"

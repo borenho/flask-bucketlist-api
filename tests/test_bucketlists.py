@@ -20,17 +20,19 @@ class BucketlistTestCase(unittest.TestCase):
             db.create_all()
 
     # Create helper functions to register and sign in a test user who can crud bucketlists
-    def register_sample_user(self, username="kaka", password="kaka10"):
+    def register_sample_user(self, username="kaka", email="kaka@email.com", password="kaka10"):
         test_user_data = {
             'username': username,
+            'email': email,
             'password': password
         }
 
         return self.client.post('/auth/register', data=json.dumps(test_user_data), content_type='application/json')
 
-    def login_sample_user(self, username="kaka", password="kaka10"):
+    def login_sample_user(self, username="kaka", email="kaka@email.com", password="kaka10"):
         test_user_data = {
             'username': username,
+            'email': email,
             'password': password
         }
 

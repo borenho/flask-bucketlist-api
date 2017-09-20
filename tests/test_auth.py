@@ -11,6 +11,7 @@ class AuthTestCase(unittest.TestCase):
         self.client = self.app.test_client()
         self.user_data = {
             'username': 'kaka',
+            'email': 'kaka@email.com',
             'password': 'hard-to-guess-1090'
         }
 
@@ -35,7 +36,7 @@ class AuthTestCase(unittest.TestCase):
         second_registration = self.client.post('/auth/register', data=json.dumps(self.user_data), content_type='application/json')
         self.assertEqual(second_registration.status_code, 202)   # Data conflict
         result = json.loads(second_registration.data.decode())
-        self.assertEqual(result['message'], "That username already exists, please use a different one")
+        self.assertEqual(result['message'], "That email already exists, please use a different one")
 
     def test_login(self):
         """Test registered user can login"""
@@ -53,6 +54,7 @@ class AuthTestCase(unittest.TestCase):
         """Test non registered users cannot login"""
         non_user = {
             "username": "nani",
+            "email": "nani@nana.com",
             "password": "nana"
         }
 
@@ -77,7 +79,7 @@ class AuthTestCase(unittest.TestCase):
         login = self.client.post('/auth/login', data=json.dumps(self.user_data), content_type='application/json')
         results = json.loads(login.data.decode())
         new_password = {
-            "username": "kaka",
+            "email": "kaka@email.com",
             "password": "very-very-hard, unusually-hard" 
         }
         reset_password = self.client.put('/auth/reset-password', data=json.dumps(new_password), content_type='application/json')

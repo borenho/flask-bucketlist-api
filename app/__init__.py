@@ -16,7 +16,7 @@ def create_app(configuration):
     app = Flask(__name__)
     app.config.from_object(app_config[configuration])
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    # This sets performance overhead, set to True for debugging
-    CORS(app)
+    # CORS(app)
     db.init_app(app)
 
 

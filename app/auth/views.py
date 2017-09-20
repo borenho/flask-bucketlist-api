@@ -19,7 +19,7 @@ class RegistrationView(MethodView):
                 email = request.json.get('email')
                 password = request.json.get('password')
 
-                if not username and password and email:
+                if not username and not password and not email:
                     return jsonify({
                     "message": "You need to pass in the username, email and password"
                 }), 401
@@ -85,33 +85,22 @@ class LoginView(MethodView):
                     "message": "You entered the wrong password"
                 }), 401
 
-            username = request.json.get('username')
             email = request.json.get('email')
             password = request.json.get('password')
 
-            if not username and password and email:
+            if not password and not email:
                 return jsonify({
-                "message": "You need to pass in the username, email and password"
+                "message": "You need to pass in the email and password"
             })
-
-            if not username:
-                return jsonify({
-            "message": "The username cannot be blank, please enter a username"
-            }), 401
 
             if not email:
                 return jsonify({
-            "message": "The email cannot be blank, please enter a username"
+            "message": "The email cannot be blank, please enter an email"
             }), 401
 
             elif not password:
                 return jsonify({
             "message": "The password cannot be blank, please enter a password"
-            }), 401
-
-            elif len(username) < 4:
-                return jsonify({
-            "message": "The username should have more than 4 characters"
             }), 401
 
             elif len(password) < 4:

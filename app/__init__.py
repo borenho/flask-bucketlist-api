@@ -31,12 +31,12 @@ def create_app(configuration):
                 user_id = User.decode_token(access_token)
                 if not isinstance(user_id, str):
                     if request.method == 'POST':
-                        title = request.json.get('title')
-                        if title:
+                        try:
+                            title = request.json.get('title')
                             if Bucketlist.title_exists(title):
                                 return jsonify({
                                         "message": "A bucketlist with that name already exists. Please use a different name"
-                                    })
+                                    }), 417
 
                             bucketlist = Bucketlist(title=title, created_by=user_id)
                             bucketlist.save()
@@ -46,15 +46,16 @@ def create_app(configuration):
                                 'title': bucketlist.title,
                                 'date_created': bucketlist.date_created,
                                 'date_modified': bucketlist.date_modified,
-                                'created_by': user_id
+                                'created_by': user_id,
+                                'message': "Yaaay! Bucketlist successfully created"
                             })
                             response.status_code = 201
 
-                            return response
-                        else:
+                            return response               
+                        except AttributeError:
                             return jsonify({
                                         "message": "The title cannot be blank"
-                                    })
+                                    }), 417
 
                     else:    # If GET
                         q = request.args.get('q', ' ').strip()
@@ -106,7 +107,7 @@ def create_app(configuration):
                                 except ValueError:
                                     return jsonify({"message": "The limit must be an integer"})
                             else:
-                                limit = 3    # default limit
+                                limit = 10    # default limit
 
                             # If q has not been passed / no search query made
                             bucketlists = Bucketlist.get_all(user_id).paginate(page, limit, False)
@@ -148,13 +149,13 @@ def create_app(configuration):
                     "message": "Error, could not authenticate. Please login first"
                 }), 401
             else:
-                    # No access token
-                    return jsonify({
-                    "message": "Error, access token not found, you need to login first"
-                }), 401
+                # No access token
+                return jsonify({
+                "message": "Error, access token not found, you need to login first"
+            }), 401
         else:   # No auth_header
             return jsonify({
-                    "message": "Error, access token not found, you need to login first"
+                    "message": "Error, header access token not found, you need to login first"
                 }), 401
 
 
@@ -174,12 +175,8 @@ def create_app(configuration):
                     }), 404
 
                 if request.method == 'PUT':
-                    title = request.json.get('title')
-                    if title:
-                        if bucketlist.title_exists(title):
-                            return jsonify({
-                                    "message": "A bucketlist with that name already exists. Please use a different name"
-                                })
+                    try:
+                        title = request.json.get('title')
 
                         bucketlist.title = title
                         bucketlist.save()
@@ -189,15 +186,16 @@ def create_app(configuration):
                             'title': bucketlist.title,
                             'date_created': bucketlist.date_created,
                             'date_modified': bucketlist.date_modified,
-                            'created_by': user_id
+                            'created_by': user_id,
+                                'message': "Yaaay! Bucketlist successfully updated"
                         }), 200
 
                         return response
 
-                    else:
+                    except AttributeError:
                         return jsonify({
                                 "message": "The title cannot be blank"
-                            })
+                            }), 417
 
                 elif request.method == 'DELETE':
                     bucketlist.delete()
@@ -223,7 +221,11 @@ def create_app(configuration):
                 return jsonify({
                 "message": "Error, could not authenticate. Please login first"
             }), 401
-
+        else:
+            # No access token
+            return jsonify({
+            "message": "Error, access token not found, you need to login first"
+        }), 401
 
     @app.route('/bucketlists/<int:bucketlist_id>/items', methods=['GET', 'POST'])
     def bucketlist_items(bucketlist_id, **kwargs):
@@ -246,7 +248,7 @@ def create_app(configuration):
                         if BucketlistItem.title_exists(title):
                             return jsonify({
                                 "message": "The title should be unique, use a different name"
-                            })
+                            }), 409
 
                         bucketlist_item = BucketlistItem(title=title, bucketlist_id=bucketlist_id)
                         bucketlist_item.save()
@@ -256,7 +258,8 @@ def create_app(configuration):
                             'title': bucketlist_item.title,
                             'date_created': bucketlist_item.date_created,
                             'date_modified': bucketlist_item.date_modified,
-                            'bucketlist_id': bucketlist_id 
+                            'bucketlist_id': bucketlist_id,
+                            'message': "Yaaay! Bucketlist item successfully added"
                         })
                         response.status_code = 201
 
@@ -264,7 +267,7 @@ def create_app(configuration):
 
                     return jsonify({
                                 "message": "Title cannot be blank"
-                            })
+                            }), 400
 
                 else:    # If GET
                     q = request.args.get('q', ' ').strip()
@@ -316,7 +319,7 @@ def create_app(configuration):
                             except ValueError:
                                 return jsonify({"message": "The limit must be an integer"})
                         else:
-                            limit = 3    # default limit
+                            limit = 5    # default limit
 
                         # If q has not been passed / no search query made
                         bucketlist_items = BucketlistItem.get_all(bucketlist_id).paginate(page, limit, False)
@@ -386,12 +389,8 @@ def create_app(configuration):
 
                 if request.method == 'PUT':
                     title = request.json.get('title')
+                    
                     if title:
-                        if BucketlistItem.title_exists(title):
-                            return jsonify({
-                                "message": "An item with that name already exists, please use a different name"
-                            })
-
                         bucketlist_item.title = request.json.get('title')
                         bucketlist_item.save()
 
@@ -400,7 +399,8 @@ def create_app(configuration):
                             'title': bucketlist_item.title,
                             'date_created': bucketlist_item.date_created,
                             'date_modified': bucketlist_item.date_modified,
-                            'bucketlist_id': bucketlist_id
+                            'bucketlist_id': bucketlist_id,
+                            'message': "Yaaay! Bucketlist item successfully updated"
                         }), 200
 
                         return response

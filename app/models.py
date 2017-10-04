@@ -42,7 +42,7 @@ class User(db.Model):
         # Create a payload/claim
         payload = {
             "iss": id,    # iss = issuer of token
-            "exp": datetime.utcnow() + timedelta(minutes=60)    # iat = issued at time
+            "exp": datetime.utcnow() + timedelta(minutes=1200)    # iat = issued at time (token expires after 20hrs)
         }
         jwt_string = jwt.encode(payload, os.getenv('SECRET'), algorithm='HS256')
         
@@ -57,10 +57,14 @@ class User(db.Model):
             return payload['iss']
         except jwt.ExpiredSignatureError:
             # the token is expired, return an error string
-            return "Expired token. Please login to get a new token"
+            return jsonify({
+                "message": "Expired token. Please login to get a new token"
+                }), 403
         except jwt.InvalidTokenError:
             # the token is invalid, return an error string
-            return "Invalid token. Please register or login"
+            return jsonify({
+                "message": "Invalid token. Please register or login"
+                }), 403
         
     def save(self):
         """Method to save user"""

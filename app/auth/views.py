@@ -12,7 +12,7 @@ class RegistrationView(MethodView):
             if user:
                 return jsonify({
             "message": "That email already exists, please use a different one"
-            }), 202
+            }), 409
 
             else:
                 username = request.json.get('username')
@@ -91,7 +91,7 @@ class LoginView(MethodView):
             if not password and not email:
                 return jsonify({
                 "message": "You need to pass in the email and password"
-            })
+            }), 401
 
             if not email:
                 return jsonify({

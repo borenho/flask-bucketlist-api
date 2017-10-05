@@ -34,7 +34,7 @@ class AuthTestCase(unittest.TestCase):
         first_registration = self.client.post('/auth/register', data=json.dumps(self.user_data), content_type='application/json')
         self.assertEqual(first_registration.status_code, 201)
         second_registration = self.client.post('/auth/register', data=json.dumps(self.user_data), content_type='application/json')
-        self.assertEqual(second_registration.status_code, 202)   # Data conflict
+        self.assertEqual(second_registration.status_code, 409)   # Data conflict
         result = json.loads(second_registration.data.decode())
         self.assertEqual(result['message'], "That email already exists, please use a different one")
 
